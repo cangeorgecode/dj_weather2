@@ -28,7 +28,7 @@ def index(request):
             
             for x in range(1, 15):
                 forecast_temp.append(req['days'][x]['temp'])
-                forecast_desc.append(req['days'][x]['description'])
+                forecast_desc.append(req['days'][x]['conditions'])
                 forecast_datetime.append(req['days'][x]['datetime'])
             
             # Run multiple lists in parallel using the zip() function in template
@@ -46,3 +46,5 @@ def index(request):
         form = City()
     
     return render(request, 'weather/index.html', context)
+
+# API: https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/osaka?unitGroup=uk&key=CCHNQBJPUCVLJVLMQAHZDBSVL&contentType=json
