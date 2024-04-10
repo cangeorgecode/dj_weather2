@@ -1,14 +1,39 @@
 from django.shortcuts import render, redirect
 import requests
 from .forms import City
+from .models import RandomCity
 
 def index(request):
     url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{}?unitGroup=uk&key=CCHNQBJPUCVLJVLMQAHZDBSVL&contentType=json'
-    city = ''
+    city = RandomCity.objects.get(pk=1)
     context = {}
     form = City()
+    req = requests.get(url.format(city)).json()
+    address = req['address']
+    current_date = req['days'][0]['datetime']
+    current_temp = req['currentConditions']['temp']
+    current_cond = req['currentConditions']['conditions']
+    current_cond_icon = req['currentConditions']['icon']
+    forecast_datetime = []
+    forecast_temp = []
+    forecast_desc = []
+    forecast_icon = []
+    for x in range(1, 15):
+        forecast_temp.append(req['days'][x]['temp'])
+        forecast_desc.append(req['days'][x]['conditions'])
+        forecast_datetime.append(req['days'][x]['datetime'])
+        forecast_icon.append(req['days'][x]['icon'])
+            
+    # Run multiple lists in parallel using the zip() function in template
+    forecast_list = zip(forecast_datetime, forecast_temp, forecast_desc, forecast_icon)
     context = {
-        'form': form
+        'form': form,
+        'address': address,
+        'current_temp': current_temp,             
+        'current_cond': current_cond,
+        'current_date': current_date,
+        'current_cond_icon': current_cond_icon,
+        'forecast_list': forecast_list, 
     }
     if request.method == "POST":
         form = City(request.POST or None)
@@ -19,25 +44,33 @@ def index(request):
             # Variables to extract
             address = req['address']
             address = address.title()
+            current_date = req['days'][0]['datetime']
             current_temp = req['currentConditions']['temp']
             current_cond = req['currentConditions']['conditions']
-            # current_cond_icon = req['currentConditions']['icon']
+            current_cond_icon = req['currentConditions']['icon']
             forecast_datetime = []
             forecast_temp = []
             forecast_desc = []
+            forecast_icon = []
             
             for x in range(1, 15):
                 forecast_temp.append(req['days'][x]['temp'])
                 forecast_desc.append(req['days'][x]['conditions'])
                 forecast_datetime.append(req['days'][x]['datetime'])
+                forecast_icon.append(req['days'][x]['icon'])
             
             # Run multiple lists in parallel using the zip() function in template
-            forecast_list = zip(forecast_datetime, forecast_temp, forecast_desc)
+            forecast_list = zip(forecast_datetime, forecast_temp, forecast_desc, forecast_icon)
+
+            form = City()
+
             context = {
                 'form': form,
                 'address': address,             
                 'current_temp': current_temp,             
                 'current_cond': current_cond,
+                'current_date': current_date,
+                'current_cond_icon': current_cond_icon,
                 'forecast_list': forecast_list,                       
             }
             # return render(request, 'weather/index.html', context)
