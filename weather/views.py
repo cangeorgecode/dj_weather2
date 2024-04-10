@@ -3,6 +3,10 @@ import requests
 from .forms import City
 from .models import RandomCity
 
+import os
+from django.conf import settings
+from django.http import HttpResponse
+
 def index(request):
     url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{}?unitGroup=uk&key=CCHNQBJPUCVLJVLMQAHZDBSVL&contentType=json'
     city = RandomCity.objects.get(pk=1)
@@ -81,3 +85,8 @@ def index(request):
     return render(request, 'weather/index.html', context)
 
 # API: https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/osaka?unitGroup=uk&key=CCHNQBJPUCVLJVLMQAHZDBSVL&contentType=json
+
+def ads_txt_view(request):
+    with open(os.path.join(settings.STATIC_ROOT, 'ads.txt')) as file:
+        file_content = file.readlines()
+    return HttpResponse(file_content, content_type="text/plain")
